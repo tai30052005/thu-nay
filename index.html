@@ -25,7 +25,6 @@
       padding: 60px 20px 80px;
     }
 
-    /* Hạt nhiễu nền */
     body::before {
       content: '';
       position: fixed;
@@ -50,7 +49,6 @@
         inset 0 1px 0 rgba(255,255,255,0.03);
     }
 
-    /* Đường kẻ giấy mờ */
     .paper::after {
       content: '';
       position: absolute;
@@ -142,7 +140,6 @@
       z-index: 100;
     }
 
-    /* Nút skip */
     .skip-btn {
       position: fixed;
       bottom: 28px;
@@ -228,7 +225,6 @@
   const progressBar = document.getElementById('progressBar');
   const skipBtn = document.getElementById('skipBtn');
 
-  // Tính tổng số ký tự
   const totalChars = segments.reduce((sum, s) => sum + s.text.length, 0);
 
   let currentSegIndex = 0;
@@ -236,7 +232,6 @@
   let typedChars = 0;
   let done = false;
 
-  // Tạo cursor
   const cursor = document.createElement('span');
   cursor.className = 'cursor';
   container.appendChild(cursor);
@@ -269,7 +264,6 @@
     span.textContent += char;
     typedChars++;
 
-    // Cập nhật progress
     const pct = (typedChars / totalChars) * 100;
     progressBar.style.width = pct + '%';
 
@@ -314,7 +308,6 @@
 
   skipBtn.addEventListener('click', skipAll);
 
-  // Bắt đầu sau 800ms (sau khi tiêu đề xuất hiện)
   setTimeout(typeNext, 900);
 </script>
 
