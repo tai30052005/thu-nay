@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thư này,</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0d0d0d;
+      color: #e8e0d0;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 60px 20px 80px;
+    }
+
+    /* Hạt nhiễu nền */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .paper {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      width: 100%;
+      background: #111111;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 56px 64px 64px;
+      box-shadow:
+        0 0 0 1px #1a1a1a,
+        0 8px 40px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+
+    /* Đường kẻ giấy mờ */
+    .paper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        transparent,
+        transparent 31px,
+        rgba(255,255,255,0.025) 31px,
+        rgba(255,255,255,0.025) 32px
+      );
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .letter-header {
+      font-family: 'Special Elite', cursive;
+      font-size: 2rem;
+      color: #e8e0d0;
+      margin-bottom: 36px;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      animation: fadeSlideIn 0.8s ease forwards;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .letter-body {
+      font-size: 1rem;
+      line-height: 2.05;
+      color: #d4cbbb;
+      white-space: pre-wrap;
+      position: relative;
+      z-index: 1;
+      min-height: 2em;
+    }
+
+    .highlight {
+      color: #e05252;
+      font-weight: 700;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: #e05252;
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      animation: blink 0.75s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .cursor.hidden {
+      display: none;
+    }
+
+    .letter-footer {
+      margin-top: 48px;
+      font-family: 'Special Elite', cursive;
+      font-size: 0.95rem;
+      color: #666;
+      text-align: right;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .letter-footer.visible {
+      opacity: 1;
+    }
+
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: #e05252;
+      width: 0%;
+      transition: width 0.1s linear;
+      z-index: 100;
+    }
+
+    /* Nút skip */
+    .skip-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: transparent;
+      border: 1px solid #333;
+      color: #555;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.75rem;
+      padding: 8px 16px;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+      z-index: 200;
+    }
+
+    .skip-btn:hover {
+      border-color: #e05252;
+      color: #e05252;
+    }
+
+    .skip-btn.hidden {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .paper {
+        padding: 36px 28px 48px;
+      }
+      .letter-header {
+        font-size: 1.5rem;
+      }
+      .letter-body {
+        font-size: 0.92rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="paper">
+  <div class="letter-header">Thư này,</div>
+  <div class="letter-body" id="letterBody"></div>
+  <div class="letter-footer" id="letterFooter">— Người muốn cậu sống tốt hơn</div>
+</div>
+
+<button class="skip-btn" id="skipBtn">BỎ QUA →</button>
+
+<script>
+  const segments = [
+    { text: "Tôi thực sự kinh ngạc trước cái cách cậu đang đối xử với cơ thể mình. Cậu nghĩ mình là " },
+    { text: "'bất tử'", highlight: true },
+    { text: " hay đang cố gắng lập kỷ lục về việc tàn phá bản thân nhanh nhất thế giới? Sự coi thường của cậu không phải là cá tính, đó là sự vô trách nhiệm tồi tệ nhất.\n\n" },
+    { text: "Hãy nhìn thẳng vào sự thật đi:\n\n" },
+    { text: " Cái giá của sự kiêu ngạo: ", highlight: true },
+    { text: "Những thói quen xấu hiện tại không biến mất, chúng chỉ đang " },
+    { text: "'tích lũy lãi suất'", highlight: true },
+    { text: ". Đến lúc cơ thể cậu " },
+    { text: "'đòi nợ'", highlight: true },
+    { text: ", nó sẽ không đòi bằng những cơn đau nhẹ nhàng đâu, mà bằng những " },
+    { text: "hóa đơn bệnh viện khổng lồ", highlight: true },
+    { text: ", những đêm dài nằm trong phòng bệnh lạnh lẽo và sự " },
+    { text: "tàn tạ không thể đảo ngược", highlight: true },
+    { text: ". Lúc đó, cái 'tôi' hiện tại của cậu sẽ hối hận đến mức muốn tát vào mặt mình vì đã ngu ngốc đến thế.\n\n" },
+    { text: " Sự bất lực: ", highlight: true },
+    { text: "Cậu nghĩ mình vẫn đang kiểm soát được cuộc chơi? Sai rồi. Mỗi lần cậu làm trái với nhu cầu sinh học cơ bản, cậu đang tự tay tước đi quyền được sống khỏe mạnh của chính mình trong tương lai. Cậu đang tự biến mình thành " },
+    { text: "một quả bom nổ chậm mà chính cậu là người cầm dây kích hoạt", highlight: true },
+    { text: ".\n\n" },
+    { text: " Đừng ảo tưởng về sự dẻo dai: ", highlight: true },
+    { text: "Đừng lấy tuổi trẻ ra làm lá chắn. Ung thư, suy nhược, kiệt sức... chúng không quan tâm cậu là ai hay cậu đang bận rộn thế nào. Chúng đến khi cậu đã phá hủy nền tảng của mình đến mức không thể cứu vãn.\n\n" },
+    { text: "Nếu cậu vẫn muốn tiếp tục con đường này, cứ việc. Nhưng " },
+    { text: "đừng có khóc lóc hay than vãn", highlight: true },
+    { text: " khi cơ thể cậu từ chối hợp tác với cậu vào lúc cậu cần nó nhất. Đến lúc đó, chẳng ai có thể gánh thay cậu sự đau đớn đó đâu.\n\n" },
+    { text: "Tỉnh táo lại đi, ", highlight: true },
+    { text: "trước khi cái giá phải trả trở nên quá đắt đỏ để có thể chi trả." },
+  ];
+
+  const container = document.getElementById('letterBody');
+  const footer = document.getElementById('letterFooter');
+  const progressBar = document.getElementById('progressBar');
+  const skipBtn = document.getElementById('skipBtn');
+
+  // Tính tổng số ký tự
+  const totalChars = segments.reduce((sum, s) => sum + s.text.length, 0);
+
+  let currentSegIndex = 0;
+  let currentCharIndex = 0;
+  let typedChars = 0;
+  let done = false;
+
+  // Tạo cursor
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  container.appendChild(cursor);
+
+  function getDelay(char) {
+    if (char === '\n') return 300;
+    if (['.', '?', '!'].includes(char)) return 180;
+    if ([',', ':'].includes(char)) return 80;
+    if (char === ' ') return 28;
+    return 38 + Math.random() * 22;
+  }
+
+  function typeNext() {
+    if (currentSegIndex >= segments.length) {
+      finishTyping();
+      return;
+    }
+
+    const seg = segments[currentSegIndex];
+
+    if (currentCharIndex === 0) {
+      const span = document.createElement('span');
+      if (seg.highlight) span.className = 'highlight';
+      span.id = 'seg-' + currentSegIndex;
+      container.insertBefore(span, cursor);
+    }
+
+    const span = document.getElementById('seg-' + currentSegIndex);
+    const char = seg.text[currentCharIndex];
+    span.textContent += char;
+    typedChars++;
+
+    // Cập nhật progress
+    const pct = (typedChars / totalChars) * 100;
+    progressBar.style.width = pct + '%';
+
+    currentCharIndex++;
+    if (currentCharIndex >= seg.text.length) {
+      currentSegIndex++;
+      currentCharIndex = 0;
+    }
+
+    const delay = getDelay(char);
+    setTimeout(typeNext, delay);
+  }
+
+  function finishTyping() {
+    done = true;
+    cursor.className = 'cursor hidden';
+    progressBar.style.width = '100%';
+    footer.classList.add('visible');
+    skipBtn.classList.add('hidden');
+    setTimeout(() => { progressBar.style.opacity = '0'; }, 1200);
+  }
+
+  function skipAll() {
+    if (done) return;
+    done = true;
+
+    container.innerHTML = '';
+
+    segments.forEach((seg, i) => {
+      if (seg.text === '') return;
+      const span = document.createElement('span');
+      if (seg.highlight) span.className = 'highlight';
+      span.textContent = seg.text;
+      container.appendChild(span);
+    });
+
+    progressBar.style.width = '100%';
+    footer.classList.add('visible');
+    skipBtn.classList.add('hidden');
+    setTimeout(() => { progressBar.style.opacity = '0'; }, 800);
+  }
+
+  skipBtn.addEventListener('click', skipAll);
+
+  // Bắt đầu sau 800ms (sau khi tiêu đề xuất hiện)
+  setTimeout(typeNext, 900);
+</script>
+
+</body>
+</html>
